@@ -45,6 +45,10 @@ func unreadMail(user string)  {
 		messages = append(messages, message.Payload.Headers)
 	}
 
+	if len(messages) == 0 {
+		fmt.Println("No unread mail")
+	}
+
 	for _, i := range messages {
 		for _, i := range i {
 			if i.Name == "Subject" {
