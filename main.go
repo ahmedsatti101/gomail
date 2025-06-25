@@ -10,7 +10,7 @@ import (
 
 const user = "me"
 
-var choices = []string{"Check unread mail", "Send email", "Check spam", "Draft mail", "Search"}
+var choices = []string{"Check unread mail", "Send email", "Check spam", "Draft mail", "Search mail"}
 
 type model struct {
 	cursor int
@@ -73,7 +73,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	if m, ok := m.(model); ok && m.choice != "" {
-		fmt.Printf("\n---\nYou chose %s!\n", m.choice)
+	_, ok := m.(model)
+
+	if ok && m.(model).choice != "" {
+		switch m.(model).choice {
+		case "Check unread mail":
+			unreadMail(user)
+		case "Send email":
+			fmt.Println("Not available yet")
+		case "Check spam":
+			fmt.Println("Not available yet")
+		case "Draft mail":
+			fmt.Println("Not available yet")
+		case "Search mail":
+			fmt.Println("Not available yet")
+		}
 	}
 }
