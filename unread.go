@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
@@ -10,9 +9,6 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/gmail/v1"
-	"google.golang.org/api/option"
 )
 
 // Table style, border style and border color
@@ -53,26 +49,10 @@ func (m unreadMailModel) View() string {
 }
 
 func unreadMail(user string) {
-	ctx := context.Background()
-	f, err := os.ReadFile("credentials.json")
-	if err != nil {
-		log.Fatalf("Unable to read credentials: %v", err)
-	}
-
-	config, err := google.ConfigFromJSON(f, gmail.GmailReadonlyScope)
-	if err != nil {
-		log.Fatalf("Unable to parse credentials file: %v", err)
-	}
-
-	client := getClient(config)
-
-	srv, err := gmail.NewService(ctx, option.WithHTTPClient(client))
-	if err != nil {
-		log.Fatalf("Error initialising gmail service %v", err)
-	}
+	service := createService()
 
 	// List unread mail from user's mailinbox
-	req, err := srv.Users.Messages.List(user).Q("is:unread").MaxResults(10).IncludeSpamTrash(true).Do()
+	req, err := service.Users.Messages.List(user).Q("is:unread").MaxResults(10).IncludeSpamTrash(true).Do()
 	if err != nil {
 		log.Fatalf("Error retriving unread mail: %v", err)
 	}
@@ -89,7 +69,7 @@ func unreadMail(user string) {
 
 	for _, msgs := range req.Messages {
 		// Get each unread email's metadata
-		message, err := srv.Users.Messages.Get(user, msgs.Id).Format("metadata").Do()
+		message, err := service.Users.Messages.Get(user, msgs.Id).Format("metadata").Do()
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
@@ -137,7 +117,7 @@ func unreadMail(user string) {
 	t.SetStyles(s)
 
 	m := unreadMailModel{t}
-	if _, err := tea.NewProgram(m).Run(); err != nil {
+	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
 		fmt.Println("Error rendering table:", err)
 		os.Exit(1)
 	}
