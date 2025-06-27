@@ -24,6 +24,8 @@ func main() {
 		switch m.(choicesModel).choice {
 		case "Check unread mail":
 			unreadMail(user)
+		case "Search mail":
+			search()
 		default:
 			fmt.Println("Not available yet")
 		}
