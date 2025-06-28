@@ -3,8 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
+	"gomail.com/layout"
+
+	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -13,7 +17,8 @@ func search() {
 	srv := createService()
 	q := getSearchQuery()
 
-	req, err := srv.Users.Messages.List(user).Q(q).Do()
+	fmt.Print("Fetching emails...")
+	req, err := srv.Users.Messages.List(user).Q(q).MaxResults(50).Do()
 	if err != nil {
 		log.Fatalf("Error retriving messages: %v", err)
 	}
@@ -21,6 +26,16 @@ func search() {
 	if len(req.Messages) == 0 {
 		fmt.Println("No available messages. Please try a different query.")
 	}
+
+	// Define table columns
+	columns := []table.Column{
+		{Title: "ID", Width: 20},
+		{Title: "Email subject", Width: 70},
+		{Title: "Sender", Width: 30},
+	}
+
+	// Define table rows
+	rows := []table.Row{}
 
 	for _, msgs := range req.Messages {
 		message, err := srv.Users.Messages.Get(user, msgs.Id).Format("metadata").Do()
@@ -46,11 +61,11 @@ func search() {
 		if idx := strings.Index(sender, "<"); idx != -1 {
 			sender = strings.TrimSpace(sender[:idx])
 		}
-		
-		fmt.Println(msgs.Id)
-		fmt.Println(subject)
-		fmt.Println(sender)
+
+		rows = append(rows, []string{msgs.Id, subject, sender})
 	}
+
+	layout.TableLayout(columns, rows)
 }
 
 func getSearchQuery() string {
@@ -64,6 +79,12 @@ func getSearchQuery() string {
 	}
 
 	model := m.(inputModel)
+
+	// Check if user provided a search query. Exit if not
+	if len(model.textInput.Value()) == 0 {
+		fmt.Println("Please provide a search query")
+		os.Exit(1)
+	}
 	return model.textInput.Value()
 }
 
@@ -96,8 +117,8 @@ func (m inputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyCtrlC, tea.KeyEnter:
+		switch msg.String() {
+		case "ctrl+c", "enter":
 			return m, tea.Quit
 		}
 
