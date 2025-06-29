@@ -14,7 +14,7 @@ func unreadMail(user string) {
 	service := createService()
 
 	// Fetch unread mail from user's mailinbox
-	fmt.Print("Fetching emails...")
+	fmt.Println("Fetching emails...")
 	req, err := service.Users.Messages.List(user).Q("is:unread").MaxResults(50).IncludeSpamTrash(true).Do()
 	if err != nil {
 		log.Fatalf("Error retriving unread mail: %v", err)
