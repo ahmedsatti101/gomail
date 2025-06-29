@@ -1,6 +1,8 @@
-package main
+package layout
 
 import (
+	"fmt"
+	"os"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -11,6 +13,17 @@ var choices = []string{"Check unread mail", "Send email", "Check spam", "Draft m
 type choicesModel struct {
 	cursor int
 	choice string
+}
+
+func ChoicesLayout() string {
+	c := tea.NewProgram(choicesModel{}, tea.WithAltScreen())
+	m, err := c.Run()
+	
+	if err != nil {
+		fmt.Printf("Error rendering choices: %v", err)
+		os.Exit(1)
+	}
+	return m.(choicesModel).choice
 }
 
 func (m choicesModel) Init() tea.Cmd {
