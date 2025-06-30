@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func TableLayout(columns []table.Column, rows []table.Row) int {
+func TableLayout(columns []table.Column, rows []table.Row) string {
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
@@ -30,12 +30,12 @@ func TableLayout(columns []table.Column, rows []table.Row) int {
 	t.SetStyles(s)
 
 	m := tableModel{t}
-	_, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
+	_, err := tea.NewProgram(m).Run()
 	if err != nil {
 		fmt.Println("Error rendering table:", err)
 		os.Exit(1)
 	}
-	return -1
+	return m.table.SelectedRow()[0]
 }
 
 // Table style, border style and border color
@@ -60,6 +60,10 @@ func (m tableModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
+		case "enter":
+			return m, tea.Batch(
+				tea.Printf("Reading %s...", m.table.SelectedRow()[1]),
+				)
 		}
 	}
 	m.table, cmd = m.table.Update(msg)
