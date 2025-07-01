@@ -1,4 +1,4 @@
-package main
+package actions
 
 import (
 	"fmt"
@@ -7,16 +7,17 @@ import (
 	"strings"
 
 	"gomail.com/layout"
+	"gomail.com/utils"
 
 	"github.com/charmbracelet/bubbles/table"
 )
 
-func search() {
-	srv := createService()
+func Search() {
+	srv := utils.CreateService()
 	q := layout.GetSearchQuery()
 
 	fmt.Println("Fetching emails...")
-	req, err := srv.Users.Messages.List(user).Q(q).MaxResults(50).Do()
+	req, err := srv.Users.Messages.List("me").Q(q).MaxResults(50).Do()
 	if err != nil {
 		log.Fatalf("Error retriving messages: %v", err)
 	}
@@ -37,7 +38,7 @@ func search() {
 	rows := []table.Row{}
 
 	for _, msgs := range req.Messages {
-		message, err := srv.Users.Messages.Get(user, msgs.Id).Format("metadata").Do()
+		message, err := srv.Users.Messages.Get("me", msgs.Id).Format("metadata").Do()
 		if err != nil {
 			log.Fatalf("%v", err)
 		}

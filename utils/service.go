@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-func createService() *gmail.Service {
+func CreateService() *gmail.Service {
 	ctx := context.Background()
 	f, err := os.ReadFile("credentials.json")
 	if err != nil {

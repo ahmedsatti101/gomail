@@ -8,7 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-var choices = []string{"Check unread mail", "Send email", "Check spam", "Draft mail", "Search mail", "Read mail"}
+var choices = []string{"Check unread mail", "Send email", "Check spam", "Draft mail", "Search mail"}
 
 type choicesModel struct {
 	cursor int

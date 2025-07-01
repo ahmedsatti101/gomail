@@ -1,42 +1,30 @@
-package main
+package actions
 
 import (
-	"fmt"
 	"encoding/base64"
-	"log"
+	"fmt"
 	"os"
-	"os/exec"
+
+	"gomail.com/utils"
 )
 
-func readEmail(user, id string)  {
-	err := os.WriteFile("index.html", []byte(""), 0644)
-	if err != nil {
-		log.Fatalf("Error creating or writing HTML file: %v", err)
-	}
-
-	srv := createService()
+func ReadEmail(user, id string) (string, error) {
+	srv := utils.CreateService()
 
 	data, dataErr := srv.Users.Messages.Get(user, id).Do()
 	if dataErr != nil {
-		log.Fatalf("Error retriving message info: %v", dataErr)
+		return "", fmt.Errorf("Error retriving message info: %v", dataErr)
 	}
 
 	message, msgErr := base64.URLEncoding.DecodeString(data.Payload.Body.Data)
 	if msgErr != nil {
-		log.Fatalf("Error decoding email message: %v", msgErr)
+		return "", fmt.Errorf("Error decoding email message: %v", msgErr)
 	}
 
 	ferr := os.WriteFile("index.html", message, 0644)
 	if ferr != nil {
-		log.Fatalf("Error writing to HTML file: %v", ferr)
+		return "", fmt.Errorf("Error writing to HTML file: %v", ferr)
 	}
 
-	cmd := exec.Command("open", "index.html")
-	stdout, err := cmd.Output()
-
-	if err != nil {
-		log.Fatalf("Error opening HTML file: %v", err)
-	}
-
-	fmt.Println(string(stdout))
+	return string(message), nil
 }

@@ -1,4 +1,4 @@
-package main
+package actions
 
 import (
 	"fmt"
@@ -6,12 +6,13 @@ import (
 	"strings"
 
 	"gomail.com/layout"
+	"gomail.com/utils"
 
 	"github.com/charmbracelet/bubbles/table"
 )
 
-func unreadMail(user string) {
-	service := createService()
+func UnreadMail(user string) {
+	service := utils.CreateService()
 
 	// Fetch unread mail from user's mailinbox
 	fmt.Println("Fetching emails...")
