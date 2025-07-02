@@ -3,13 +3,16 @@ package layout
 import (
 	"fmt"
 	"os"
+	"os/exec"
+
+	"gomail.com/actions"
 
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
-func TableLayout(columns []table.Column, rows []table.Row) int {
+func TableLayout(columns []table.Column, rows []table.Row) string {
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
@@ -30,12 +33,12 @@ func TableLayout(columns []table.Column, rows []table.Row) int {
 	t.SetStyles(s)
 
 	m := tableModel{t}
-	_, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
+	_, err := tea.NewProgram(m).Run()
 	if err != nil {
 		fmt.Println("Error rendering table:", err)
 		os.Exit(1)
 	}
-	return -1
+	return m.table.SelectedRow()[0]
 }
 
 // Table style, border style and border color
@@ -60,6 +63,9 @@ func (m tableModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
+		case "enter":
+			selectedId := m.table.SelectedRow()[0]
+			return m, fetchEmail("me", selectedId)
 		}
 	}
 	m.table, cmd = m.table.Update(msg)
@@ -69,4 +75,26 @@ func (m tableModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // Render model
 func (m tableModel) View() string {
 	return baseStyle.Render(m.table.View()) + "\n(Press q or Ctrl+c to quit)"
+}
+
+type emailMsg struct {
+	msg string
+	err error
+}
+
+func fetchEmail(user, id string) tea.Cmd {
+	return func() tea.Msg {
+		msg, err := actions.ReadEmail(user, id)
+		if err != nil {
+			return emailMsg{msg, err}
+		}
+
+		if len(msg) > 0 {
+			cmd := exec.Command("open", "index.html")
+			if err := cmd.Start(); err != nil {
+				return emailMsg{msg, err}
+			}
+		}
+		return emailMsg{msg, nil}
+	}
 }
