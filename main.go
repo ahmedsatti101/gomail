@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"gomail.com/layout"
-	"gomail.com/actions"
 )
 
 func main() {
@@ -13,11 +12,11 @@ func main() {
 	if choice != "" {
 		switch choice {
 		case "Check unread mail":
-			actions.UnreadMail("me")
+			unreadMail("me")
 		case "Search mail":
-			actions.Search()
+			search()
 		default:
-			fmt.Printf("Option '%s' is not available yet", choice)
+			fmt.Printf("Option '%s' is not available yet\n", choice)
 		}
 	}
 }

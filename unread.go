@@ -1,9 +1,8 @@
-package actions
+package main
 
 import (
 	"fmt"
 	"log"
-	"os"
 	"strings"
 
 	"gomail.com/layout"
@@ -12,19 +11,14 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 )
 
-func Search() {
-	srv := utils.CreateService()
-	q := layout.GetSearchQuery()
+func unreadMail(user string) {
+	service := utils.CreateService()
 
+	// Fetch unread mail from user's mailinbox
 	fmt.Println("Fetching emails...")
-	req, err := srv.Users.Messages.List("me").Q(q).MaxResults(50).Do()
+	req, err := service.Users.Messages.List(user).Q("is:unread").MaxResults(50).IncludeSpamTrash(true).Do()
 	if err != nil {
-		log.Fatalf("Error retriving messages: %v", err)
-	}
-
-	if len(req.Messages) == 0 {
-		fmt.Println("No emails matching your search. Please try a different search query.")
-		os.Exit(1)
+		log.Fatalf("Error retriving unread mail: %v", err)
 	}
 
 	// Define table columns
@@ -38,7 +32,8 @@ func Search() {
 	rows := []table.Row{}
 
 	for _, msgs := range req.Messages {
-		message, err := srv.Users.Messages.Get("me", msgs.Id).Format("metadata").Do()
+		// Get each unread email's metadata
+		message, err := service.Users.Messages.Get(user, msgs.Id).Format("metadata").Do()
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
@@ -62,6 +57,7 @@ func Search() {
 			sender = strings.TrimSpace(sender[:idx])
 		}
 
+		// Populate table rows with email id, their subject & sender info
 		rows = append(rows, []string{msgs.Id, subject, sender})
 	}
 
