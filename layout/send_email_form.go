@@ -5,11 +5,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
+
+var values []string
 
 func SendEmailForm() {
 	_, err := tea.NewProgram(formInitialModel()).Run()
@@ -35,7 +36,6 @@ var (
 type formModel struct {
 	focusIndex int
 	inputs     []textinput.Model
-	cursorMode cursor.Mode
 }
 
 func formInitialModel() formModel {
@@ -47,6 +47,7 @@ func formInitialModel() formModel {
 	for i := range m.inputs {
 		t = textinput.New()
 		t.Cursor.Style = cursorStyle
+		t.Width = 100
 
 		switch i {
 		case 0:
@@ -86,6 +87,9 @@ func (m formModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Did the user press enter while the submit button was focused?
 			// If so, exit.
 			if s == "enter" && m.focusIndex == len(m.inputs) {
+				for _, v := range m.inputs {
+					values = append(values, v.Value())
+				}
 				return m, tea.Quit
 			}
 
@@ -141,6 +145,7 @@ func (m *formModel) updateInputs(msg tea.Msg) tea.Cmd {
 
 func (m formModel) View() string {
 	var b strings.Builder
+	b.WriteString(("Fill in the fields below to send an email\n"))
 
 	for i := range m.inputs {
 		b.WriteString(m.inputs[i].View())
@@ -158,4 +163,8 @@ func (m formModel) View() string {
 	b.WriteString(helpStyle.Render("Press Esc or Ctrl+c to quit"))
 
 	return b.String()
+}
+
+func GetValues() []string {
+	return values
 }
