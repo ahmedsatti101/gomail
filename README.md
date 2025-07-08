@@ -21,4 +21,4 @@ Run `go run .` in your terminal and select one of options presented to you. Afte
 
 Once you proceed, the authorization code will be in the URL of the current page after the `&code=` parameter. Copy what is after that up until but not including `&scope=`. Paste the code back into your terminal and press `Enter`.
 
-You read any of the returned emails by pressing `Enter` and an HTML page will open in your browser with the contents of your email.
+You can read any of the returned emails by pressing `Enter` and an HTML page will open in your browser with the contents of your email.
