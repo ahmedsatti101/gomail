@@ -74,7 +74,7 @@ func (m inputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m inputModel) View() string {
 	return fmt.Sprintf(
-		"The search query supports the same format as the Gmail search box. (i.e. from:someuser@example.com or is:unread)\n\n%s\n\n%s",
+		"The search query supports the same format as the Gmail search box. (i.e. from:someuser@example.com or is:unread)\n\nYou can combine multiple queries as well. For example, 'category:updates label:unread' which shows unread mail in\nthe updates category\n\n%s\n\n%s",
 		m.textInput.View(),
 		"(Press Ctrl+c to quit)",
 	) + "\n"
