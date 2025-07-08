@@ -15,6 +15,8 @@ func main() {
 			unreadMail("me")
 		case "Search mail":
 			search()
+		case "Send email":
+			SendEmail()
 		default:
 			fmt.Printf("Option '%s' is not available yet\n", choice)
 		}

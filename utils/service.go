@@ -17,7 +17,7 @@ func CreateService() *gmail.Service {
 		log.Fatalf("Unable to read credentials: %v", err)
 	}
 
-	config, err := google.ConfigFromJSON(f, gmail.GmailReadonlyScope)
+	config, err := google.ConfigFromJSON(f, gmail.GmailReadonlyScope, gmail.GmailSendScope)
 	if err != nil {
 		log.Fatalf("Unable to parse credentials file: %v", err)
 	}
