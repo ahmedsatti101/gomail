@@ -20,3 +20,5 @@ replace `repo-url` with the link you copied earlier and press `Enter`. Naviagte 
 Run `go run .` in your terminal and select one of options presented to you. After your selection, you will be asked to copy a link and paste it in your browser which will allow you to obtain a authorization code. Select your google account and you will be asked if you trust Gomail to access your account and view what it will gain access to. Select `Continue` if you wish to proceed.
 
 Once you proceed, the authorization code will be in the URL of the current page after the `&code=` parameter. Copy what is after that up until but not including `&scope=`. Paste the code back into your terminal and press `Enter`.
+
+You read any of the returned emails by pressing `Enter` and an HTML page will open in your browser with the contents of your email.
