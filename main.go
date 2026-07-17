@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/gmail/v1"
 	"google.golang.org/api/option"
 )
@@ -21,23 +20,18 @@ import (
 type AuthToken *oauth2.Token
 
 func main() {
+	ctx := context.Background()
 	server := &http.Server{
 		Addr: ":9091",
 	}
-	conf := &oauth2.Config{
-		ClientID:     "424822125288-2ntgaarra8vaqa4tn15a3kp8oo07ato6.apps.googleusercontent.com",
-		ClientSecret: "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",
-		RedirectURL:  "http://localhost:9091",
-		Scopes:       []string{"https://mail.google.com/"},
-		Endpoint:     google.Endpoint,
-	}
-	consentPageUrl := conf.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
+	oauthClient := oauthClient(ctx)
 	var token AuthToken
-	ctx := context.Background()
 	srvChan := make(chan struct{}, 1)
 
+	consentPageUrl := oauthClient.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		handleAuth(w, r, conf, srvChan)
+		handleAuth(w, r, oauthClient, srvChan)
 	})
 
 	go func() {
@@ -66,14 +60,14 @@ func main() {
 
 	fmt.Println("fetching your info...")
 	if time.Since(token.Expiry) >= time.Hour {
-		_, err := updateCreds(conf, token, ctx)
+		fmt.Println("refreshing sign in details...")
+		_, err := updateCreds(oauthClient, token, ctx)
 		if err != nil {
-			fmt.Println("creds need to be updated")
+			fmt.Printf("Could not update creds: %v", err)
 		}
-		check(err)
 	}
 
-	googleClient := conf.Client(ctx, token)
+	googleClient := oauthClient.Client(ctx, token)
 	gmailSrv, err := gmail.NewService(ctx, option.WithScopes(gmail.GmailSendScope, gmail.GmailModifyScope, gmail.MailGoogleComScope), option.WithHTTPClient(googleClient))
 	check(err)
 
