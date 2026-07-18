@@ -13,8 +13,6 @@ import (
 	"time"
 
 	"golang.org/x/oauth2"
-	"google.golang.org/api/gmail/v1"
-	"google.golang.org/api/option"
 )
 
 type AuthToken *oauth2.Token
@@ -67,8 +65,7 @@ func main() {
 		}
 	}
 
-	googleClient := oauthClient.Client(ctx, token)
-	gmailSrv, err := gmail.NewService(ctx, option.WithScopes(gmail.GmailSendScope, gmail.GmailModifyScope, gmail.MailGoogleComScope), option.WithHTTPClient(googleClient))
+	gmailSrv, err := gmailService(ctx, token, oauthClient)
 	check(err)
 
 	profile, err := gmailSrv.Users.GetProfile("me").Do()
