@@ -65,6 +65,8 @@ func main() {
 		}
 	}
 
+	choice := Choices()
+	fmt.Printf("choices: %v\n", choice)
 	gmailSrv, err := gmailService(ctx, token, oauthClient)
 	check(err)
 
