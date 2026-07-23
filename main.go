@@ -56,7 +56,6 @@ func main() {
 	err = json.Unmarshal(credsFile, &token)
 	check(err)
 
-	fmt.Println("fetching your info...")
 	if time.Since(token.Expiry) >= time.Hour {
 		fmt.Println("refreshing sign in details...")
 		_, err := updateCreds(oauthClient, token, ctx)
@@ -65,13 +64,14 @@ func main() {
 		}
 	}
 
-	choice := Choices()
-	fmt.Printf("choices: %v\n", choice)
 	gmailSrv, err := gmailService(ctx, token, oauthClient)
 	check(err)
 
-	profile, err := gmailSrv.Users.GetProfile("me").Do()
-	check(err)
-
-	fmt.Printf("profile: %v\n", profile.EmailAddress)
+	choice := Choices()
+	switch choice {
+	case "Check unread mail":
+		unreadMail(gmailSrv)
+	default:
+		fmt.Println("Not implemented")
+	}
 }

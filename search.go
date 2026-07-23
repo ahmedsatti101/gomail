@@ -28,11 +28,11 @@ func search() {
 	}
 
 	// Define table columns
-	columns := []table.Column{
-		{Title: "ID", Width: 20},
-		{Title: "Email subject", Width: 70},
-		{Title: "Sender", Width: 30},
-	}
+	// columns := []table.Column{
+	// 	{Title: "ID", Width: 20},
+	// 	{Title: "Email subject", Width: 70},
+	// 	{Title: "Sender", Width: 30},
+	// }
 
 	// Define table rows
 	rows := []table.Row{}
@@ -65,5 +65,5 @@ func search() {
 		rows = append(rows, []string{msgs.Id, subject, sender})
 	}
 
-	layout.TableLayout(columns, rows)
+	// layout.TableLayout(columns, rows)
 }
