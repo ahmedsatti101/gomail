@@ -45,7 +45,7 @@ func (ch choicesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 func (ch choicesModel) View() tea.View {
 	s := strings.Builder{}
-	s.WriteString("What kind of Bubble Tea would you like to order?\n\n")
+	s.WriteString("Select action:\n")
 
 	for i := range choices {
 		if ch.cursor == i {
@@ -56,7 +56,7 @@ func (ch choicesModel) View() tea.View {
 		s.WriteString(choices[i])
 		s.WriteString("\n")
 	}
-	s.WriteString("\n(press q to quit)\n")
+	s.WriteString("\n(Press q, Ctrl+c or Esc to quit)\n")
 
 	return tea.NewView(s.String())
 }
