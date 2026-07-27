@@ -8,9 +8,9 @@ import (
 	"google.golang.org/api/gmail/v1"
 )
 
-func unreadMail(service *gmail.Service) {
+func unreadMail(service *gmail.Service, limit int) {
 	fmt.Println("fetching emails...")
-	emails, err := service.Users.Messages.List("me").Q("is:unread").MaxResults(500).IncludeSpamTrash(true).Do()
+	emails, err := service.Users.Messages.List("me").Q("is:unread").MaxResults(int64(limit)).IncludeSpamTrash(true).Do()
 	if err != nil {
 		log.Fatalf("Error retriving unread mail: %v", err)
 	}
