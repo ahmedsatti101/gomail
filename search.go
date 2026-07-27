@@ -9,9 +9,9 @@ import (
 	"google.golang.org/api/gmail/v1"
 )
 
-func search(service *gmail.Service, query string) {
+func search(service *gmail.Service, query string, limit int) {
 	fmt.Println("Fetching emails...")
-	req, err := service.Users.Messages.List("me").Q(query).MaxResults(50).Do()
+	req, err := service.Users.Messages.List("me").Q(query).MaxResults(int64(limit)).Do()
 	if err != nil {
 		log.Fatalf("Error retriving messages: %v", err)
 	}

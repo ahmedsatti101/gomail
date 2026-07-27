@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"io/fs"
 	"log"
@@ -25,6 +26,13 @@ func main() {
 	oauthClient := oauthClient(ctx)
 	var token AuthToken
 	srvChan := make(chan struct{}, 1)
+
+	limitFlag := flag.Int("limit", 50, "Specify the limit flag to limit how many emails are retrieved. Max value is 500.")
+	flag.Parse()
+	if *limitFlag > 500 {
+		fmt.Println("The maximum number of emails that can be retrieved is 500.")
+		os.Exit(1)
+	}
 
 	consentPageUrl := oauthClient.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
 
@@ -70,11 +78,11 @@ func main() {
 	choice := Choices()
 	switch choice {
 	case "Check unread mail":
-		unreadMail(gmailSrv)
+		unreadMail(gmailSrv, *limitFlag)
 	case "Search mail":
 		q := textInputModel()
 		if q != "" {
-			search(gmailSrv, q)
+			search(gmailSrv, q, *limitFlag)
 		}
 	default:
 		fmt.Println("Not implemented")
