@@ -71,6 +71,11 @@ func main() {
 	switch choice {
 	case "Check unread mail":
 		unreadMail(gmailSrv)
+	case "Search mail":
+		q := textInputModel()
+		if q != "" {
+			search(gmailSrv, q)
+		}
 	default:
 		fmt.Println("Not implemented")
 	}
