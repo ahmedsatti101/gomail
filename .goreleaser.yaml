@@ -7,8 +7,12 @@ before:
 
 builds:
   - main: ./...
+    binary: gomail
+    ldflags:
+      - -s -w
+      - -X main.clientId={{ .Env.GMAIL_CLIENT_ID }}
+      - -X main.clientSecret={{ .Env.GMAIL_CLIENT_SECRET }}
     env:
-      - GOOGLE_APPLICATION_CREDENTIALS={{ .Env.GOOGLE_APPLICATION_CREDENTIALS }}
       - CGO_ENABLED=0
     goos:
       - linux
