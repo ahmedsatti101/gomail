@@ -1,1 +1,3 @@
-gomail.com
+gomail
+# Added by goreleaser init:
+dist/
