@@ -84,7 +84,5 @@ func main() {
 		if q != "" {
 			search(gmailSrv, q, *limitFlag)
 		}
-	default:
-		fmt.Println("Not implemented")
 	}
 }

@@ -11,7 +11,7 @@ type choicesModel struct {
 	choice string
 }
 
-var choices = []string{"Check unread mail", "Send email", "Search mail"}
+var choices = []string{"Check unread mail", "Search mail"}
 
 func (ch choicesModel) Init() tea.Cmd {
 	return nil

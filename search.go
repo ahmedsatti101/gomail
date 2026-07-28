@@ -10,7 +10,7 @@ import (
 )
 
 func search(service *gmail.Service, query string, limit int) {
-	fmt.Println("Fetching emails...")
+	fmt.Println("fetching emails...")
 	req, err := service.Users.Messages.List("me").Q(query).MaxResults(int64(limit)).Do()
 	if err != nil {
 		log.Fatalf("Error retriving messages: %v", err)
