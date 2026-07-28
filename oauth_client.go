@@ -7,12 +7,10 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-func oauthClient(ctx context.Context) *oauth2.Config {
-	clientId, err := secretManager(ctx, "projects/424822125288/secrets/gomail-client-id/versions/latest")
-	check(err)
-	clientSecret, err := secretManager(ctx, "projects/424822125288/secrets/gomail-client-secret/versions/latest")
-	check(err)
+var clientId string
+var clientSecret string
 
+func oauthClient(ctx context.Context) *oauth2.Config {
 	conf := &oauth2.Config{
 		ClientID:     clientId,
 		ClientSecret: clientSecret,
