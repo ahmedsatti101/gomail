@@ -3,40 +3,23 @@ package main
 import (
 	"fmt"
 	"log"
-	"strings"
 
-	"gomail.com/layout"
-	"gomail.com/utils"
-
-	"github.com/charmbracelet/bubbles/table"
+	"charm.land/bubbles/v2/list"
+	"google.golang.org/api/gmail/v1"
 )
 
-func unreadMail(user string) {
-	service := utils.CreateService()
-
-	// Fetch unread mail from user's mailinbox
-	fmt.Println("Fetching emails...")
-	req, err := service.Users.Messages.List(user).Q("is:unread").MaxResults(50).IncludeSpamTrash(true).Do()
+func unreadMail(service *gmail.Service, limit int) {
+	fmt.Println("fetching emails...")
+	emails, err := service.Users.Messages.List("me").Q("is:unread").MaxResults(int64(limit)).IncludeSpamTrash(true).Do()
 	if err != nil {
 		log.Fatalf("Error retriving unread mail: %v", err)
 	}
 
-	// Define table columns
-	columns := []table.Column{
-		{Title: "ID", Width: 20},
-		{Title: "Email subject", Width: 70},
-		{Title: "Sender", Width: 30},
-	}
+	data := make([]list.Item, 0, len(emails.Messages))
 
-	// Define table rows
-	rows := []table.Row{}
-
-	for _, msgs := range req.Messages {
-		// Get each unread email's metadata
-		message, err := service.Users.Messages.Get(user, msgs.Id).Format("metadata").Do()
-		if err != nil {
-			log.Fatalf("%v", err)
-		}
+	for _, msgs := range emails.Messages {
+		message, err := service.Users.Messages.Get("me", msgs.Id).Format("metadata").Do()
+		check(err)
 
 		subject := "(No subject)"
 		sender := "Unknown"
@@ -52,14 +35,13 @@ func unreadMail(user string) {
 			}
 		}
 
-		// Trim sender variable to show only the name of the sender
-		if idx := strings.Index(sender, "<"); idx != -1 {
-			sender = strings.TrimSpace(sender[:idx])
-		}
-
-		// Populate table rows with email id, their subject & sender info
-		rows = append(rows, []string{msgs.Id, subject, sender})
+		email := email{subject: subject, sender: sender}
+		data = append(data, email)
 	}
 
-	layout.TableLayout(columns, rows)
+	if len(data) >= 1 {
+		List(data)
+	} else {
+		fmt.Println("No new emails")
+	}
 }

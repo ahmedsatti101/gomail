@@ -1,24 +1,96 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
+	"flag"
 	"fmt"
+	"io/fs"
+	"log"
+	"net/http"
+	"os"
+	"path/filepath"
+	"time"
 
-	"gomail.com/layout"
+	"golang.org/x/oauth2"
 )
 
-func main() {
-	choice := layout.ChoicesLayout()
+type AuthToken *oauth2.Token
 
-	if choice != "" {
-		switch choice {
-		case "Check unread mail":
-			unreadMail("me")
-		case "Search mail":
-			search()
-		case "Send email":
-			SendEmail()
-		default:
-			fmt.Printf("Option '%s' is not available yet\n", choice)
+func main() {
+	ctx := context.Background()
+	server := &http.Server{
+		Addr: ":9091",
+	}
+	oauthClient := oauthClient(ctx)
+	var token AuthToken
+	srvChan := make(chan struct{}, 1)
+
+	limitFlag := flag.Int("limit", 50, "Specify the limit flag to limit how many emails are retrieved. Max value is 500.")
+	flag.Usage = func() {
+		fmt.Fprint(flag.CommandLine.Output(), "Usage: gomail -limit=INT\n\n")
+		fmt.Fprintln(flag.CommandLine.Output(), "-limit (optional) ", " Specify the limit flag to limit how many emails are retrieved, default is 50. Max value is 500.")
+		fmt.Fprintln(flag.CommandLine.Output(), "-help ", " Display this help text.")
+	}
+	flag.Parse()
+	if *limitFlag > 500 {
+		fmt.Println("The maximum number of emails that can be retrieved is 500.")
+		os.Exit(1)
+	} else if *limitFlag < 1 {
+		fmt.Println("Limit cannot be less than 1.")
+		os.Exit(1)
+	}
+
+	consentPageUrl := oauthClient.AuthCodeURL("state", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		handleAuth(w, r, oauthClient, srvChan)
+	})
+
+	go func() {
+		err := server.ListenAndServe()
+		if !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("Server err: %v", err)
+		}
+		log.Println("Stopping server...")
+	}()
+
+	homeDir, err := os.UserHomeDir()
+	check(err)
+
+	_, err = os.Open(filepath.Join(homeDir, ".gomail/creds.json"))
+
+	if errors.Is(err, fs.ErrNotExist) {
+		fmt.Printf("Open this link in your browser: %s\n", consentPageUrl)
+		<-srvChan
+	}
+
+	credsFile, err := os.ReadFile(filepath.Join(homeDir, "/.gomail/creds.json"))
+	check(err)
+
+	err = json.Unmarshal(credsFile, &token)
+	check(err)
+
+	if time.Since(token.Expiry) >= time.Hour {
+		fmt.Println("refreshing sign in details...")
+		_, err := updateCreds(oauthClient, token, ctx)
+		if err != nil {
+			fmt.Printf("Could not update creds: %v", err)
+		}
+	}
+
+	gmailSrv, err := gmailService(ctx, token, oauthClient)
+	check(err)
+
+	choice := Choices()
+	switch choice {
+	case "Check unread mail":
+		unreadMail(gmailSrv, *limitFlag)
+	case "Search mail":
+		q := textInputModel()
+		if q != "" {
+			search(gmailSrv, q, *limitFlag)
 		}
 	}
 }

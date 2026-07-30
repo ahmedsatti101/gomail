@@ -4,20 +4,14 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
-	"gomail.com/layout"
-	"gomail.com/utils"
-
-	"github.com/charmbracelet/bubbles/table"
+	"charm.land/bubbles/v2/list"
+	"google.golang.org/api/gmail/v1"
 )
 
-func search() {
-	srv := utils.CreateService()
-	q := layout.GetSearchQuery()
-
-	fmt.Println("Fetching emails...")
-	req, err := srv.Users.Messages.List("me").Q(q).MaxResults(50).Do()
+func search(service *gmail.Service, query string, limit int) {
+	fmt.Println("fetching emails...")
+	req, err := service.Users.Messages.List("me").Q(query).MaxResults(int64(limit)).Do()
 	if err != nil {
 		log.Fatalf("Error retriving messages: %v", err)
 	}
@@ -27,21 +21,10 @@ func search() {
 		os.Exit(1)
 	}
 
-	// Define table columns
-	columns := []table.Column{
-		{Title: "ID", Width: 20},
-		{Title: "Email subject", Width: 70},
-		{Title: "Sender", Width: 30},
-	}
-
-	// Define table rows
-	rows := []table.Row{}
-
+	data := make([]list.Item, 0, len(req.Messages))
 	for _, msgs := range req.Messages {
-		message, err := srv.Users.Messages.Get("me", msgs.Id).Format("metadata").Do()
-		if err != nil {
-			log.Fatalf("%v", err)
-		}
+		message, err := service.Users.Messages.Get("me", msgs.Id).Format("metadata").Do()
+		check(err)
 
 		subject := "(No subject)"
 		sender := "Unknown"
@@ -57,13 +40,13 @@ func search() {
 			}
 		}
 
-		// Trim sender variable to show only the name of the sender
-		if idx := strings.Index(sender, "<"); idx != -1 {
-			sender = strings.TrimSpace(sender[:idx])
-		}
-
-		rows = append(rows, []string{msgs.Id, subject, sender})
+		email := email{subject: subject, sender: sender}
+		data = append(data, email)
 	}
 
-	layout.TableLayout(columns, rows)
+	if len(data) >= 1 {
+		List(data)
+	} else {
+		fmt.Println("No emails matching your query")
+	}
 }
