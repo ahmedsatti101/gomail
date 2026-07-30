@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -10,6 +11,9 @@ import (
 
 	"golang.org/x/oauth2"
 )
+
+//go:embed auth-success.html
+var f []byte
 
 func handleAuth(w http.ResponseWriter, r *http.Request, conf *oauth2.Config, srvChan chan struct{}) {
 	code := r.URL.Query().Get("code")
@@ -41,5 +45,5 @@ func handleAuth(w http.ResponseWriter, r *http.Request, conf *oauth2.Config, srv
 	close(srvChan)
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Successfully authenticated. You may close this tab."))
+	w.Write(f)
 }
