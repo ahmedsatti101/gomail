@@ -28,9 +28,17 @@ func main() {
 	srvChan := make(chan struct{}, 1)
 
 	limitFlag := flag.Int("limit", 50, "Specify the limit flag to limit how many emails are retrieved. Max value is 500.")
+	flag.Usage = func() {
+		fmt.Fprint(flag.CommandLine.Output(), "Usage: gomail -limit=INT\n\n")
+		fmt.Fprintln(flag.CommandLine.Output(), "-limit (optional) ", " Specify the limit flag to limit how many emails are retrieved, default is 50. Max value is 500.")
+		fmt.Fprintln(flag.CommandLine.Output(), "-help ", " Display this help text.")
+	}
 	flag.Parse()
 	if *limitFlag > 500 {
 		fmt.Println("The maximum number of emails that can be retrieved is 500.")
+		os.Exit(1)
+	} else if *limitFlag < 1 {
+		fmt.Println("Limit cannot be less than 1.")
 		os.Exit(1)
 	}
 
